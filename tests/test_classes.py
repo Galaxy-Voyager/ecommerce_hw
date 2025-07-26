@@ -43,7 +43,7 @@ def test_product_repr(sample_product):
 # Тесты для Category
 def test_category_init(sample_category):
     assert sample_category.name == "Test Category"
-    assert len(sample_category.products) == 1
+    assert len(sample_category._products) == 1
 
 
 def test_category_str(sample_category):
@@ -53,14 +53,14 @@ def test_category_str(sample_category):
 
 def test_category_count():
     initial = Category.category_count
-    cat = Category("Test", "Desc", [])
+    Category("Test", "Desc", [])
     assert Category.category_count == initial + 1
 
 
 def test_product_count():
     initial = Category.product_count
     p = Product("P", "D", 100, 1)
-    cat = Category("Test", "Desc", [p])
+    Category("Test", "Desc", [p])
     assert Category.product_count == initial + 1
 
 
@@ -91,7 +91,7 @@ def test_product_zero_price():
 
 def test_empty_category():
     cat = Category("Empty", "Desc", [])
-    assert len(cat.products) == 0
+    assert len(cat._products) == 0
     assert "0" in str(cat)
 
 
@@ -108,7 +108,7 @@ def test_product_high_quantity():
 def test_json_loading_content():
     categories = load_data_from_json("products.json")
     assert (
-        len(categories[0].products) == 3
+        len(categories[0]._products) == 3
     )  # Проверяем количество товаров в первой категории
     assert categories[0].products[0].name == "Samsung Galaxy C23 Ultra"
 
@@ -117,7 +117,7 @@ def test_category_with_multiple_products():
     p1 = Product("Product 1", "Desc 1", 100.0, 10)
     p2 = Product("Product 2", "Desc 2", 200.0, 20)
     cat = Category("Multi", "Desc", [p1, p2])
-    assert len(cat.products) == 2
+    assert len(cat._products) == 2
     assert "2" in str(cat)
 
 
@@ -132,14 +132,14 @@ def test_category_add_product():
     cat = Category("Test", "Desc", [])
     p = Product("New", "Desc", 50.0, 1)
     cat.products.append(p)
-    assert len(cat.products) == 1
+    assert len(cat._products) == 1
     assert "1" in str(cat)
 
 
 def test_category_count_reset():
     initial_count = Category.category_count
     Category.category_count = 0
-    cat = Category("Temp", "Desc", [])
+    Category("Temp", "Desc", [])
     assert Category.category_count == 1
     Category.category_count = initial_count
 
@@ -148,13 +148,13 @@ def test_product_count_reset():
     initial_count = Category.product_count
     Category.product_count = 0
     p = Product("Temp", "Desc", 10.0, 1)
-    cat = Category("Temp", "Desc", [p])
+    Category("Temp", "Desc", [p])
     assert Category.product_count == 1
     Category.product_count = initial_count
 
 
 def test_json_loading_invalid_data(tmp_path):
-    import json
+    pass
 
     invalid_file = tmp_path / "invalid.json"
     invalid_file.write_text('{"invalid": "data"}', encoding="utf-8")
@@ -168,7 +168,7 @@ def test_product_negative_quantity():
 
 
 def test_json_loading_invalid_format(tmp_path):
-    import json
+    pass
 
     invalid_file = tmp_path / "invalid.json"
     invalid_file.write_text('{"invalid": "data"}', encoding="utf-8")
@@ -177,7 +177,7 @@ def test_json_loading_invalid_format(tmp_path):
 
 
 def test_json_loading_missing_keys(tmp_path):
-    import json
+    pass
 
     invalid_file = tmp_path / "invalid.json"
     invalid_file.write_text('[{"name": "Test"}]', encoding="utf-8")
@@ -186,7 +186,7 @@ def test_json_loading_missing_keys(tmp_path):
 
 
 def test_json_loading_empty_list(tmp_path):
-    import json
+    pass
 
     file_path = tmp_path / "empty.json"
     file_path.write_text("[]", encoding="utf-8")
@@ -201,7 +201,7 @@ def test_product_price_precision():
 
 
 def test_json_loading_invalid_products_type(tmp_path):
-    import json
+    pass
 
     invalid_file = tmp_path / "invalid.json"
     invalid_file.write_text(
@@ -228,7 +228,7 @@ def test_product_non_integer_quantity():
 
 
 def test_json_loading_invalid_price_type(tmp_path):
-    import json
+    pass
 
     invalid_file = tmp_path / "invalid.json"
     invalid_file.write_text(
@@ -251,7 +251,7 @@ def test_json_loading_invalid_price_type(tmp_path):
 
 
 def test_json_loading_invalid_quantity_type(tmp_path):
-    import json
+    pass
 
     invalid_file = tmp_path / "invalid.json"
     invalid_file.write_text(
@@ -275,7 +275,6 @@ def test_json_loading_invalid_quantity_type(tmp_path):
 
 def test_json_loading_missing_product_field(tmp_path):
     """Тест на отсутствие обязательного поля в товаре"""
-    import json
 
     file_path = tmp_path / "test.json"
     file_path.write_text(
@@ -299,7 +298,6 @@ def test_json_loading_missing_product_field(tmp_path):
 
 def test_json_loading_invalid_category_structure(tmp_path):
     """Тест на неверную структуру категории"""
-    import json
 
     file_path = tmp_path / "test.json"
     file_path.write_text(
@@ -360,7 +358,6 @@ def test_json_loading_empty_fields():
 
 def test_json_loading_invalid_nested_types(tmp_path):
     """Тест на неверные типы во вложенных данных"""
-    import json
 
     file_path = tmp_path / "test.json"
     file_path.write_text(
@@ -380,13 +377,13 @@ def test_json_loading_invalid_nested_types(tmp_path):
 def test_remove_category(sample_category):
     initial_cat = Category.category_count
     initial_prod = Category.product_count
-    product_count = len(sample_category.products)
+    product_count = len(sample_category._products)
 
     # Проверяем успешное удаление
     assert sample_category.remove_category() is True
     assert Category.category_count == initial_cat - 1
     assert Category.product_count == initial_prod - product_count
-    assert len(sample_category.products) == 0  # Проверяем очистку продуктов
+    assert len(sample_category._products) == 0  # Проверяем очистку продуктов
 
 
 def test_double_remove_category(sample_category):
@@ -414,3 +411,143 @@ def test_reactivate_category():
 
     cat._is_active = True
     assert cat.remove_category() is True  # Теперь снова можно удалить
+
+
+def test_add_product_method(sample_category):
+    initial_count = Category.product_count
+    new_product = Product("New", "Desc", 50.0, 1)
+    sample_category.add_product(new_product)
+    assert len(sample_category._products) == 2
+    assert Category.product_count == initial_count + 1
+
+
+def test_products_property(sample_category):
+    products_list = sample_category.products
+    assert any(p.name == "Test Product" for p in products_list)
+
+
+def test_new_product_classmethod():
+    product_data = {
+        "name": "Test",
+        "description": "Desc",
+        "price": 100.0,
+        "quantity": 5,
+    }
+    product = Product.new_product(product_data)
+    assert isinstance(product, Product)
+    assert product.name == "Test"
+
+
+def test_products_setter():
+    cat = Category("Test", "Desc", [])
+    products = [Product("P1", "D1", 100, 1), Product("P2", "D2", 200, 2)]
+    cat.products = products  # Проверяем сеттер
+    assert len(cat._products) == 2
+
+
+def test_remove_category_twice():
+    cat = Category("Test", "Desc", [Product("P", "D", 100, 1)])
+    cat.remove_category()
+    with pytest.raises(ValueError, match="Категория уже удалена"):
+        cat.remove_category()  # Попытка удалить дважды
+
+
+def test_new_product_with_duplicate():
+    p1 = Product("Phone", "Desc", 100, 5)
+    new_data = {"name": "Phone", "description": "New", "price": 150, "quantity": 3}
+    result = Product.new_product(new_data, [p1])  # Проверяем объединение
+    assert result.quantity == 8  # 5 + 3
+    assert result.price == 150  # Выбрана высокая цена
+
+
+def test_json_loading_invalid(tmp_path):
+    invalid_file = tmp_path / "invalid.json"
+    invalid_file.write_text('{"invalid": "data"}', encoding="utf-8")
+    with pytest.raises(ValueError):
+        load_data_from_json(str(invalid_file))
+
+
+# Дополнительные тесты для Product
+def test_product_price_setter_positive():
+    p = Product("Test", "Desc", 100, 5)
+    p.price = 150
+    assert p.price == 150
+
+
+def test_product_price_setter_negative():
+    p = Product("Test", "Desc", 100, 5)
+    p.price = -50  # Должен игнорироваться
+    assert p.price == 100
+
+
+def test_product_price_setter_zero():
+    p = Product("Test", "Desc", 100, 5)
+    p.price = 0  # Должен игнорироваться
+    assert p.price == 100
+
+
+# Дополнительные тесты для Category
+def test_category_add_invalid_product():
+    cat = Category("Test", "Desc", [])
+    with pytest.raises(ValueError):
+        cat.add_product("not a product")  # Не объект Product
+
+
+def test_category_add_duplicate_product():
+    p = Product("Test", "Desc", 100, 5)
+    cat = Category("Test", "Desc", [p])
+    with pytest.raises(ValueError):
+        cat.add_product(p)  # Дубликат
+
+
+def test_category_products_setter():
+    cat = Category("Test", "Desc", [])
+    new_products = [Product("P1", "D1", 100, 1), Product("P2", "D2", 200, 2)]
+    cat.products = new_products
+    assert len(cat._products) == 2
+
+
+def test_category_str_with_empty_products():
+    cat = Category("Test", "Desc", [])
+    assert str(cat) == "Test, количество продуктов: 0"
+
+
+# Тесты для JSON загрузки
+def test_json_loading_empty_file(tmp_path):
+    empty_file = tmp_path / "empty.json"
+    empty_file.write_text("[]", encoding="utf-8")
+    result = load_data_from_json(str(empty_file))
+    assert len(result) == 0
+
+
+# Тесты для new_product
+def test_new_product_with_empty_data():
+    with pytest.raises(ValueError):
+        Product.new_product({})
+
+
+def test_new_product_with_duplicate_price_update():
+    existing = Product("Phone", "Desc", 100, 5)
+    new = Product.new_product(
+        {"name": "Phone", "description": "New", "price": 150, "quantity": 3}, [existing]
+    )
+    assert new.price == 150
+    assert new.quantity == 8
+
+
+# Тесты для remove_category
+def test_remove_category_updates_counters():
+    initial_cat = Category.category_count
+    initial_prod = Category.product_count
+    cat = Category("Test", "Desc", [Product("P", "D", 100, 1)])
+
+    cat.remove_category()
+    assert Category.category_count == initial_cat
+    assert Category.product_count == initial_prod
+
+
+def test_remove_category_inactive():
+    cat = Category("Test", "Desc", [])
+    cat.remove_category()
+    with pytest.raises(ValueError):
+        cat.remove_category()  # Повторное удаление

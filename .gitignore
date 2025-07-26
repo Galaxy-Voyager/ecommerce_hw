@@ -1,0 +1,15 @@
+﻿# JetBrains IDE
+.idea/
+*.iml
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Environments
+.env
+.venv/poetry.lock
