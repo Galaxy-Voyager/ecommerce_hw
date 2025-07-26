@@ -1,5 +1,4 @@
-@"
-# JetBrains IDE
+﻿# JetBrains IDE
 .idea/
 *.iml
 
@@ -10,4 +9,7 @@ __pycache__/
 # Coverage reports
 .coverage
 htmlcov/
-"@ | Out-File -FilePath .gitignore -Encoding utf8
+
+# Environments
+.env
+.venv/
