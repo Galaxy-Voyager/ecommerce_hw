@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class Product:
     def __init__(self, name: str, description: str, price: float, quantity: int):
         if not isinstance(name, str) or not name.strip():
@@ -28,9 +31,12 @@ class Product:
             print("Цена не должна быть нулевая или отрицательная")
             return
         # Доп. задание: подтверждение снижения цены
-        if hasattr(self, '_price') and new_price < self._price:
-            confirm = input(f"Вы уверены, что хотите снизить цену с {self._price} до {new_price}? (y/n): ")
-            if confirm.lower() != 'y':
+        if hasattr(self, "_price") and new_price < self._price:
+            confirm = input(
+                f"Вы уверены, что хотите снизить цену с {
+                    self._price} до {new_price}? (y/n): "
+            )
+            if confirm.lower() != "y":
                 print("Изменение цены отменено")
                 return
         self._price = new_price
@@ -47,7 +53,9 @@ class Product:
         return f"Product(name='{self.name}', description='{self.description}', price={self.price}, quantity={self.quantity})"
 
     @classmethod
-    def new_product(cls, product_data: dict, products_list: list = None):
+    def new_product(
+        cls, product_data: dict, products_list: list[Product] | None = None
+    ):
         """Создает новый продукт из словаря с валидацией данных."""
         # Проверка обязательных полей
         required_fields = ["name", "description", "price", "quantity"]
@@ -59,7 +67,7 @@ class Product:
             name=product_data["name"],
             description=product_data["description"],
             price=product_data["price"],
-            quantity=product_data["quantity"]
+            quantity=product_data["quantity"],
         )
 
         # Дополнительное задание: проверка на дубликаты
@@ -251,7 +259,8 @@ def load_data_from_json(filename: str) -> list[Category]:
                     )
                 )
             except ValueError as e:
-                raise ValueError(f"Ошибка создания категории: {str(e)}")
+                error_msg = f"Ошибка создания категории: {str(e)}"
+                raise ValueError(error_msg)
 
         return categories
 
