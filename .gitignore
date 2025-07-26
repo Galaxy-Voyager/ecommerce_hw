@@ -1,0 +1,13 @@
+@"
+# JetBrains IDE
+.idea/
+*.iml
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Coverage reports
+.coverage
+htmlcov/
+"@ | Out-File -FilePath .gitignore -Encoding utf8

@@ -15,8 +15,25 @@ class Product:
 
         self.name = name.strip()
         self.description = description
-        self.price = float(price)
+        self._price = float(price)
         self.quantity = quantity
+
+    @property
+    def price(self):
+        return self._price
+
+    @price.setter
+    def price(self, new_price):
+        if new_price <= 0:
+            print("Цена не должна быть нулевая или отрицательная")
+            return
+        # Доп. задание: подтверждение снижения цены
+        if hasattr(self, '_price') and new_price < self._price:
+            confirm = input(f"Вы уверены, что хотите снизить цену с {self._price} до {new_price}? (y/n): ")
+            if confirm.lower() != 'y':
+                print("Изменение цены отменено")
+                return
+        self._price = new_price
 
     def __str__(self) -> str:
         desc = (
@@ -28,6 +45,32 @@ class Product:
 
     def __repr__(self) -> str:
         return f"Product(name='{self.name}', description='{self.description}', price={self.price}, quantity={self.quantity})"
+
+    @classmethod
+    def new_product(cls, product_data: dict, products_list: list = None):
+        """Создает новый продукт из словаря с валидацией данных."""
+        # Проверка обязательных полей
+        required_fields = ["name", "description", "price", "quantity"]
+        if not all(field in product_data for field in required_fields):
+            raise ValueError("Отсутствуют обязательные поля в данных продукта")
+
+        # Основная реализация
+        product = cls(
+            name=product_data["name"],
+            description=product_data["description"],
+            price=product_data["price"],
+            quantity=product_data["quantity"]
+        )
+
+        # Дополнительное задание: проверка на дубликаты
+        if products_list:
+            for existing_product in products_list:
+                if existing_product.name == product.name:
+                    existing_product.quantity += product.quantity
+                    if existing_product.price < product.price:
+                        existing_product.price = product.price
+                    return existing_product
+        return product
 
 
 class Category:
@@ -65,7 +108,7 @@ class Category:
         # Установка атрибутов
         self.name = name.strip()
         self.description = description.strip()
-        self.products = products.copy()  # Используем копию списка для безопасности
+        self._products = products.copy()  # Используем копию списка для безопасности
         self._is_active = True
 
         # Обновление счетчиков
@@ -74,7 +117,7 @@ class Category:
 
     def __str__(self) -> str:
         """Строковое представление категории"""
-        return f"{self.name}, количество продуктов: {len(self.products)}"
+        return f"{self.name}, количество продуктов: {len(self._products)}"
 
     def __repr__(self) -> str:
         """Формальное строковое представление для отладки"""
@@ -94,8 +137,8 @@ class Category:
             raise ValueError("Категория уже удалена")
 
         Category.category_count -= 1
-        Category.product_count -= len(self.products)
-        self.products = []
+        Category.product_count -= len(self._products)
+        self._products = []
         self._is_active = False
         return True
 
@@ -111,11 +154,19 @@ class Category:
         """
         if not isinstance(product, Product):
             raise ValueError("Можно добавлять только объекты Product")
-        if product in self.products:
+        if product in self._products:
             raise ValueError("Товар уже есть в категории")
 
-        self.products.append(product)
+        self._products.append(product)
         Category.product_count += 1
+
+    @property
+    def products(self):
+        return self._products
+
+    @products.setter
+    def products(self, value):
+        self._products = value
 
     @classmethod
     def reset_counters(cls) -> None:
