@@ -12,4 +12,4 @@ htmlcov/
 
 # Environments
 .env
-.venv/
+.venv/poetry.lock
