@@ -24,8 +24,16 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
 pytest-cov = "^6.2.1"
+autoflake = "^2.3.1"
+pre-commit = "^4.2.0"
+autopep8 = "^2.3.2"
 
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+
+[tool.flake8]
+max-line-length = 88
+ignore = "E501,W503"
