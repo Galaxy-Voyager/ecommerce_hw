@@ -18,12 +18,12 @@ class Product:
 
         self.name = name.strip()
         self.description = description
-        self._price = float(price)
+        self.__price = float(price)
         self.quantity = quantity
 
     @property
     def price(self):
-        return self._price
+        return self.__price
 
     @price.setter
     def price(self, new_price):
@@ -31,15 +31,15 @@ class Product:
             print("Цена не должна быть нулевая или отрицательная")
             return
         # Доп. задание: подтверждение снижения цены
-        if hasattr(self, "_price") and new_price < self._price:
+        if hasattr(self, "__price") and new_price < self.__price:
             confirm = input(
                 f"Вы уверены, что хотите снизить цену с {
-                    self._price} до {new_price}? (y/n): "
+                    self.__price} до {new_price}? (y/n): "
             )
             if confirm.lower() != "y":
                 print("Изменение цены отменено")
                 return
-        self._price = new_price
+        self.__price = new_price
 
     def __str__(self) -> str:
         desc = (

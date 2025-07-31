@@ -551,3 +551,8 @@ def test_remove_category_inactive():
     cat.remove_category()
     with pytest.raises(ValueError):
         cat.remove_category()  # Повторное удаление
+
+def test_price_is_private():
+    p = Product("Test", "Desc", 100, 5)
+    with pytest.raises(AttributeError):
+        print(p.__price)
