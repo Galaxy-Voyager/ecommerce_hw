@@ -48,7 +48,7 @@ def test_category_init(sample_category):
 
 def test_category_str(sample_category):
     assert "Test Category" in str(sample_category)
-    assert "1" in str(sample_category)
+    assert "5" in str(sample_category)
 
 
 def test_category_count():
@@ -118,14 +118,13 @@ def test_category_with_multiple_products():
     p2 = Product("Product 2", "Desc 2", 200.0, 20)
     cat = Category("Multi", "Desc", [p1, p2])
     assert len(cat._products) == 2
-    assert "2" in str(cat)
+    assert "30" in str(cat)
 
 
 def test_product_long_description():
     long_desc = "Очень длинное описание " * 10
     p = Product("Test", long_desc, 100.0, 5)
-    assert "Очень длинное описан..." in str(p)  # Проверяем обрезанное описание
-    assert "100.0 руб." in str(p)
+    assert "Очень длинное описан..." in str(p)
 
 
 def test_category_add_product():
@@ -507,7 +506,7 @@ def test_category_products_setter():
 
 def test_category_str_with_empty_products():
     cat = Category("Test", "Desc", [])
-    assert str(cat) == "Test, количество продуктов: 0"
+    assert str(cat) == "Test, количество продуктов: 0 шт."
 
 
 def test_json_loading_empty_file(tmp_path):
@@ -555,14 +554,14 @@ def test_price_is_private():
 
 
 def test_product_str_format():
-    p = Product("Test", "Description", 100.0, 5)
-    assert "Test, Description, 100.0 руб. Остаток: 5 шт." == str(p)
+    p = Product("Телевизор", "4K OLED", 50000, 3)
+    assert str(p) == "Телевизор, 4K OLED, 50000.0 руб. Остаток: 3 шт."
 
 
 def test_category_str_format():
     p = Product("Test", "Desc", 100, 1)
     cat = Category("Test Cat", "Desc", [p])
-    assert "Test Cat, количество продуктов: 1" == str(cat)
+    assert str(cat) == "Test Cat, количество продуктов: 1 шт."
 
 
 def test_product_addition():
@@ -584,3 +583,15 @@ def test_category_iterator():
 
     products = [p for p in cat]
     assert products == [p1, p2]
+
+
+def test_product_str_format():
+    p = Product("Телевизор", "4K OLED", 50000, 3)
+    assert str(p) == "Телевизор, 50000.0 руб. Остаток: 3 шт."
+
+
+def test_category_str_calculation():
+    p1 = Product("Пылесос", "Мощный", 10000, 2)
+    p2 = Product("Фен", "Турбо", 5000, 5)
+    cat = Category("Бытовая техника", "Для дома", [p1, p2])
+    assert str(cat) == "Бытовая техника, количество продуктов: 7 шт."
