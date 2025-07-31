@@ -41,6 +41,12 @@ class Product:
                 return
         self.__price = new_price
 
+    def __add__(self, other):
+        """Складывает продукты по формуле: цена * количество + цена * количество"""
+        if not isinstance(other, Product):
+            raise TypeError("Можно складывать только объекты Product")
+        return self.price * self.quantity + other.price * other.quantity
+
     def __str__(self) -> str:
         desc = (
             self.description[:20] + "..."
@@ -123,6 +129,11 @@ class Category:
         Category.category_count += 1
         Category.product_count += len(products)
 
+    def __add__(self, other):
+        if not isinstance(other, Product):
+            raise TypeError("Можно складывать только объекты Product")
+        return self.price * self.quantity + other.price * other.quantity
+
     def __str__(self) -> str:
         """Строковое представление категории"""
         return f"{self.name}, количество продуктов: {len(self._products)}"
@@ -134,6 +145,9 @@ class Category:
             f"description='{self.description}', "
             f"products_count={len(self.products)})"
         )
+
+    def __iter__(self):
+        return CategoryIterator(self)
 
     def remove_category(self):
         """
@@ -270,6 +284,22 @@ def load_data_from_json(filename: str) -> list[Category]:
         raise ValueError(f"Ошибка JSON: {str(e)}")
     except Exception as e:
         raise ValueError(f"Ошибка обработки файла: {str(e)}")
+
+
+class CategoryIterator:
+    def __init__(self, category: Category):
+        self.category = category
+        self.index = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.index < len(self.category.products):
+            product = self.category.products[self.index]
+            self.index += 1
+            return product
+        raise StopIteration
 
 
 if __name__ == "__main__":

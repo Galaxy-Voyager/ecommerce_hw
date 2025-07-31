@@ -467,7 +467,6 @@ def test_json_loading_invalid(tmp_path):
         load_data_from_json(str(invalid_file))
 
 
-# Дополнительные тесты для Product
 def test_product_price_setter_positive():
     p = Product("Test", "Desc", 100, 5)
     p.price = 150
@@ -486,7 +485,6 @@ def test_product_price_setter_zero():
     assert p.price == 100
 
 
-# Дополнительные тесты для Category
 def test_category_add_invalid_product():
     cat = Category("Test", "Desc", [])
     with pytest.raises(ValueError):
@@ -512,7 +510,6 @@ def test_category_str_with_empty_products():
     assert str(cat) == "Test, количество продуктов: 0"
 
 
-# Тесты для JSON загрузки
 def test_json_loading_empty_file(tmp_path):
     empty_file = tmp_path / "empty.json"
     empty_file.write_text("[]", encoding="utf-8")
@@ -520,7 +517,6 @@ def test_json_loading_empty_file(tmp_path):
     assert len(result) == 0
 
 
-# Тесты для new_product
 def test_new_product_with_empty_data():
     with pytest.raises(ValueError):
         Product.new_product({})
@@ -535,7 +531,6 @@ def test_new_product_with_duplicate_price_update():
     assert new.quantity == 8
 
 
-# Тесты для remove_category
 def test_remove_category_updates_counters():
     initial_cat = Category.category_count
     initial_prod = Category.product_count
@@ -552,7 +547,40 @@ def test_remove_category_inactive():
     with pytest.raises(ValueError):
         cat.remove_category()  # Повторное удаление
 
+
 def test_price_is_private():
     p = Product("Test", "Desc", 100, 5)
     with pytest.raises(AttributeError):
         print(p.__price)
+
+
+def test_product_str_format():
+    p = Product("Test", "Description", 100.0, 5)
+    assert "Test, Description, 100.0 руб. Остаток: 5 шт." == str(p)
+
+
+def test_category_str_format():
+    p = Product("Test", "Desc", 100, 1)
+    cat = Category("Test Cat", "Desc", [p])
+    assert "Test Cat, количество продуктов: 1" == str(cat)
+
+
+def test_product_addition():
+    p1 = Product("P1", "D1", 100, 2)
+    p2 = Product("P2", "D2", 200, 3)
+    assert p1 + p2 == 800  # 100*2 + 200*3
+
+
+def test_product_addition_invalid():
+    p = Product("P", "D", 100, 1)
+    with pytest.raises(TypeError):
+        p + "not a product"
+
+
+def test_category_iterator():
+    p1 = Product("P1", "D1", 100, 1)
+    p2 = Product("P2", "D2", 200, 2)
+    cat = Category("Test", "Desc", [p1, p2])
+
+    products = [p for p in cat]
+    assert products == [p1, p2]
