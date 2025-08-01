@@ -1,6 +1,6 @@
 import pytest
 
-from src.main import Category, Product, load_data_from_json
+from src.main import Category, Product, Smartphone, LawnGrass, load_data_from_json
 
 
 @pytest.fixture(autouse=True)
@@ -480,14 +480,14 @@ def test_product_price_setter_negative():
 
 def test_product_price_setter_zero():
     p = Product("Test", "Desc", 100, 5)
-    p.price = 0  # Должен игнорироваться
+    p.price = 0
     assert p.price == 100
 
 
 def test_category_add_invalid_product():
     cat = Category("Test", "Desc", [])
-    with pytest.raises(ValueError):
-        cat.add_product("not a product")  # Не объект Product
+    with pytest.raises(TypeError):
+        cat.add_product("not a product")
 
 
 def test_category_add_duplicate_product():
@@ -595,3 +595,55 @@ def test_category_str_calculation():
     p2 = Product("Фен", "Турбо", 5000, 5)
     cat = Category("Бытовая техника", "Для дома", [p1, p2])
     assert str(cat) == "Бытовая техника, количество продуктов: 7 шт."
+
+
+def test_smartphone_init():
+    phone = Smartphone("Test Phone", "Desc", 100.0, 5, 95.5, "Model X", 256, "Black")
+    assert phone.name == "Test Phone"
+    assert phone.efficiency == 95.5
+    assert phone.model == "Model X"
+
+
+def test_lawn_grass_init():
+    grass = LawnGrass("Test Grass", "Desc", 50.0, 10, "USA", "7 days", "Green")
+    assert grass.name == "Test Grass"
+    assert grass.country == "USA"
+    assert grass.germination_period == "7 days"
+
+
+def test_add_same_type_products():
+    p1 = Smartphone("P1", "D1", 100, 2, 90.0, "M1", 128, "Black")
+    p2 = Smartphone("P2", "D2", 200, 3, 95.0, "M2", 256, "White")
+    assert p1 + p2 == 800  # 100*2 + 200*3
+
+
+def test_add_different_type_products():
+    p1 = Smartphone("P1", "D1", 100, 2, 90.0, "M1", 128, "Black")
+    p2 = LawnGrass("G1", "D2", 50, 5, "USA", "7 days", "Green")
+    with pytest.raises(TypeError):
+        p1 + p2
+
+
+def test_add_invalid_product_to_category():
+    cat = Category("Test", "Desc", [])
+    with pytest.raises(TypeError):
+        cat.add_product("not a product")
+
+
+def test_add_valid_subclass_product():
+    cat = Category("Test", "Desc", [])
+    phone = Smartphone("P1", "D1", 100, 2, 90.0, "M1", 128, "Black")
+    cat.add_product(phone)
+    assert len(cat.products) == 1
+
+
+def test_smartphone_repr():
+    phone = Smartphone("Test", "Desc", 100, 1, 90.0, "M1", 128, "Black")
+    assert "Smartphone" in repr(phone)
+    assert "M1" in repr(phone)
+
+
+def test_lawn_grass_repr():
+    grass = LawnGrass("Test", "Desc", 50, 1, "USA", "7 days", "Green")
+    assert "LawnGrass" in repr(grass)
+    assert "USA" in repr(grass)

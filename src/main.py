@@ -45,8 +45,8 @@ class Product:
 
     def __add__(self, other):
         """Складывает продукты по формуле: цена * количество + цена * количество"""
-        if not isinstance(other, Product):
-            raise TypeError("Можно складывать только объекты Product")
+        if type(self) != type(other):
+            raise TypeError("Можно складывать только объекты одного класса")
         return self.price * self.quantity + other.price * other.quantity
 
     def __str__(self):
@@ -180,7 +180,7 @@ class Category:
             ValueError: Если передан не Product или товар уже есть в категории
         """
         if not isinstance(product, Product):
-            raise ValueError("Можно добавлять только объекты Product")
+            raise TypeError("Можно добавлять только объекты Product или его наследников")
         if product in self._products:
             raise ValueError("Товар уже есть в категории")
 
@@ -305,6 +305,35 @@ class CategoryIterator:
             self.index += 1
             return product
         raise StopIteration
+
+
+class Smartphone(Product):
+    def __init__(self, name: str, description: str, price: float, quantity: int,
+                 efficiency: float, model: str, memory: int, color: str):
+        super().__init__(name, description, price, quantity)
+        self.efficiency = efficiency
+        self.model = model
+        self.memory = memory
+        self.color = color
+
+    def __repr__(self):
+        return (f"Smartphone(name='{self.name}', description='{self.description}', "
+                f"price={self.price}, quantity={self.quantity}, efficiency={self.efficiency}, "
+                f"model='{self.model}', memory={self.memory}, color='{self.color}')")
+
+
+class LawnGrass(Product):
+    def __init__(self, name: str, description: str, price: float, quantity: int,
+                 country: str, germination_period: str, color: str):
+        super().__init__(name, description, price, quantity)
+        self.country = country
+        self.germination_period = germination_period
+        self.color = color
+
+    def __repr__(self):
+        return (f"LawnGrass(name='{self.name}', description='{self.description}', "
+                f"price={self.price}, quantity={self.quantity}, country='{self.country}', "
+                f"germination_period='{self.germination_period}', color='{self.color}')")
 
 
 if __name__ == "__main__":
