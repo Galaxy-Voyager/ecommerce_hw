@@ -1,6 +1,16 @@
 import pytest
 
-from src.main import Category, Product, Smartphone, LawnGrass, load_data_from_json
+from src.main import (
+    Category,
+    Product,
+    Smartphone,
+    LawnGrass,
+    load_data_from_json,
+    BaseProduct,
+    CreationLoggerMixin,
+    BaseCategoryOrder,
+    Order
+)
 
 
 @pytest.fixture(autouse=True)
@@ -647,3 +657,58 @@ def test_lawn_grass_repr():
     grass = LawnGrass("Test", "Desc", 50, 1, "USA", "7 days", "Green")
     assert "LawnGrass" in repr(grass)
     assert "USA" in repr(grass)
+
+
+def test_base_product_abc():
+    """Тест, что BaseProduct действительно абстрактный"""
+    with pytest.raises(TypeError):
+        BaseProduct("Test", "Desc", 100, 5)
+
+
+def test_creation_logger_mixin():
+    """Тест работы миксина логирования"""
+    import io
+    import sys
+    from contextlib import redirect_stdout
+
+    f = io.StringIO()
+    with redirect_stdout(f):
+        p = Product("Test", "Desc", 100, 5)
+
+    output = f.getvalue()
+    assert "Создан объект класса Product" in output
+    assert "Аргументы: ('Test', 'Desc', 100, 5)" in output
+
+
+@pytest.fixture
+def sample_order(sample_product):
+    return Order("Test Order", "Order Description", sample_product, 2)
+
+
+def test_order_init(sample_order, sample_product):
+    assert sample_order.name == "Test Order"
+    assert sample_order.product == sample_product
+    assert sample_order.quantity == 2
+    assert sample_order.total_price == 200.0  # 100 * 2
+
+
+def test_order_str(sample_order):
+    assert "Test Order" in str(sample_order)
+    assert "2 шт." in str(sample_order)
+    assert "200" in str(sample_order)
+
+
+def test_order_invalid_product():
+    with pytest.raises(TypeError):
+        Order("Test", "Desc", "not a product", 1)
+
+
+def test_order_invalid_quantity(sample_product):
+    with pytest.raises(ValueError):
+        Order("Test", "Desc", sample_product, 0)
+
+
+def test_base_category_order_abc():
+    """Тест, что BaseCategoryOrder действительно абстрактный"""
+    with pytest.raises(TypeError):
+        BaseCategoryOrder("Test", "Desc")

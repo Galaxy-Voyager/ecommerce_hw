@@ -1,9 +1,38 @@
 from __future__ import annotations
 
 import sys
+from abc import ABC, abstractmethod
 
 
-class Product:
+class BaseProduct(ABC):
+    """Абстрактный базовый класс для всех продуктов"""
+
+    @abstractmethod
+    def __init__(self, name: str, description: str, price: float, quantity: int):
+        self.name = name
+        self.description = description
+        self.price = price
+        self.quantity = quantity
+
+    @abstractmethod
+    def __str__(self):
+        pass
+
+    @abstractmethod
+    def __add__(self, other):
+        pass
+
+
+class CreationLoggerMixin:
+    """Миксин для логирования создания объектов"""
+    def __new__(cls, *args, **kwargs):
+        print(f"Создан объект класса {cls.__name__} с параметрами:")
+        print(f"Аргументы: {args}")
+        print(f"Ключевые аргументы: {kwargs}")
+        return super().__new__(cls)
+
+
+class Product(CreationLoggerMixin, BaseProduct):
     def __init__(self, name: str, description: str, price: float, quantity: int):
         if not isinstance(name, str) or not name.strip():
             raise ValueError("Название товара должно быть непустой строкой")
@@ -88,7 +117,25 @@ class Product:
         return product
 
 
-class Category:
+class BaseCategoryOrder(ABC):
+    """Абстрактный базовый класс для Category и Order"""
+
+    @abstractmethod
+    def __init__(self, name: str, description: str):
+        self.name = name
+        self.description = description
+
+    @abstractmethod
+    def __str__(self):
+        pass
+
+    @property
+    @abstractmethod
+    def products(self):
+        pass
+
+
+class Category(BaseCategoryOrder):
     """
     Класс для представления категорий товаров.
     Содержит счетчики общего количества категорий и товаров.
@@ -336,6 +383,33 @@ class LawnGrass(Product):
                 f"germination_period='{self.germination_period}', color='{self.color}')")
 
 
+class Order(BaseCategoryOrder):
+    """Класс для представления заказов"""
+
+    def __init__(self, name: str, description: str, product: Product, quantity: int):
+        super().__init__(name, description)
+        if not isinstance(product, Product):
+            raise TypeError("Товар должен быть объектом Product")
+        if quantity <= 0:
+            raise ValueError("Количество должно быть положительным")
+
+        self._product = product
+        self.quantity = quantity
+        self.total_price = product.price * quantity
+
+    def __str__(self):
+        return (f"Заказ '{self.name}': {self.product.name}, "
+                f"{self.quantity} шт. на сумму {self.total_price} руб.")
+
+    @property
+    def product(self):
+        return self._product
+
+    @property
+    def products(self):
+        return [self._product]
+
+
 if __name__ == "__main__":
     product1 = Product(
         "Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5
@@ -384,3 +458,13 @@ if __name__ == "__main__":
 
     print(Category.category_count)
     print(Category.product_count)
+
+    # Тестирование заказа
+    test_order = Order(
+        "Мой первый заказ",
+        "Тестовый заказ",
+        product1,  # из существующих продуктов
+        3
+    )
+    print(test_order)
+    print(f"Сумма заказа: {test_order.total_price} руб.")
