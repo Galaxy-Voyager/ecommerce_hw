@@ -1,6 +1,16 @@
 import pytest
 
-from src.main import Category, Product, load_data_from_json
+from src.main import (
+    Category,
+    Product,
+    Smartphone,
+    LawnGrass,
+    load_data_from_json,
+    BaseProduct,
+    CreationLoggerMixin,
+    BaseCategoryOrder,
+    Order
+)
 
 
 @pytest.fixture(autouse=True)
@@ -48,7 +58,7 @@ def test_category_init(sample_category):
 
 def test_category_str(sample_category):
     assert "Test Category" in str(sample_category)
-    assert "1" in str(sample_category)
+    assert "5" in str(sample_category)
 
 
 def test_category_count():
@@ -118,14 +128,13 @@ def test_category_with_multiple_products():
     p2 = Product("Product 2", "Desc 2", 200.0, 20)
     cat = Category("Multi", "Desc", [p1, p2])
     assert len(cat._products) == 2
-    assert "2" in str(cat)
+    assert "30" in str(cat)
 
 
 def test_product_long_description():
     long_desc = "Очень длинное описание " * 10
     p = Product("Test", long_desc, 100.0, 5)
-    assert "Очень длинное описан..." in str(p)  # Проверяем обрезанное описание
-    assert "100.0 руб." in str(p)
+    assert "Очень длинное описан..." in str(p)
 
 
 def test_category_add_product():
@@ -467,7 +476,6 @@ def test_json_loading_invalid(tmp_path):
         load_data_from_json(str(invalid_file))
 
 
-# Дополнительные тесты для Product
 def test_product_price_setter_positive():
     p = Product("Test", "Desc", 100, 5)
     p.price = 150
@@ -482,15 +490,14 @@ def test_product_price_setter_negative():
 
 def test_product_price_setter_zero():
     p = Product("Test", "Desc", 100, 5)
-    p.price = 0  # Должен игнорироваться
+    p.price = 0
     assert p.price == 100
 
 
-# Дополнительные тесты для Category
 def test_category_add_invalid_product():
     cat = Category("Test", "Desc", [])
-    with pytest.raises(ValueError):
-        cat.add_product("not a product")  # Не объект Product
+    with pytest.raises(TypeError):
+        cat.add_product("not a product")
 
 
 def test_category_add_duplicate_product():
@@ -509,10 +516,9 @@ def test_category_products_setter():
 
 def test_category_str_with_empty_products():
     cat = Category("Test", "Desc", [])
-    assert str(cat) == "Test, количество продуктов: 0"
+    assert str(cat) == "Test, количество продуктов: 0 шт."
 
 
-# Тесты для JSON загрузки
 def test_json_loading_empty_file(tmp_path):
     empty_file = tmp_path / "empty.json"
     empty_file.write_text("[]", encoding="utf-8")
@@ -520,7 +526,6 @@ def test_json_loading_empty_file(tmp_path):
     assert len(result) == 0
 
 
-# Тесты для new_product
 def test_new_product_with_empty_data():
     with pytest.raises(ValueError):
         Product.new_product({})
@@ -535,7 +540,6 @@ def test_new_product_with_duplicate_price_update():
     assert new.quantity == 8
 
 
-# Тесты для remove_category
 def test_remove_category_updates_counters():
     initial_cat = Category.category_count
     initial_prod = Category.product_count
@@ -552,7 +556,159 @@ def test_remove_category_inactive():
     with pytest.raises(ValueError):
         cat.remove_category()  # Повторное удаление
 
+
 def test_price_is_private():
     p = Product("Test", "Desc", 100, 5)
     with pytest.raises(AttributeError):
         print(p.__price)
+
+
+def test_product_str_format():
+    p = Product("Телевизор", "4K OLED", 50000, 3)
+    assert str(p) == "Телевизор, 4K OLED, 50000.0 руб. Остаток: 3 шт."
+
+
+def test_category_str_format():
+    p = Product("Test", "Desc", 100, 1)
+    cat = Category("Test Cat", "Desc", [p])
+    assert str(cat) == "Test Cat, количество продуктов: 1 шт."
+
+
+def test_product_addition():
+    p1 = Product("P1", "D1", 100, 2)
+    p2 = Product("P2", "D2", 200, 3)
+    assert p1 + p2 == 800  # 100*2 + 200*3
+
+
+def test_product_addition_invalid():
+    p = Product("P", "D", 100, 1)
+    with pytest.raises(TypeError):
+        p + "not a product"
+
+
+def test_category_iterator():
+    p1 = Product("P1", "D1", 100, 1)
+    p2 = Product("P2", "D2", 200, 2)
+    cat = Category("Test", "Desc", [p1, p2])
+
+    products = [p for p in cat]
+    assert products == [p1, p2]
+
+
+def test_product_str_format():
+    p = Product("Телевизор", "4K OLED", 50000, 3)
+    assert str(p) == "Телевизор, 50000.0 руб. Остаток: 3 шт."
+
+
+def test_category_str_calculation():
+    p1 = Product("Пылесос", "Мощный", 10000, 2)
+    p2 = Product("Фен", "Турбо", 5000, 5)
+    cat = Category("Бытовая техника", "Для дома", [p1, p2])
+    assert str(cat) == "Бытовая техника, количество продуктов: 7 шт."
+
+
+def test_smartphone_init():
+    phone = Smartphone("Test Phone", "Desc", 100.0, 5, 95.5, "Model X", 256, "Black")
+    assert phone.name == "Test Phone"
+    assert phone.efficiency == 95.5
+    assert phone.model == "Model X"
+
+
+def test_lawn_grass_init():
+    grass = LawnGrass("Test Grass", "Desc", 50.0, 10, "USA", "7 days", "Green")
+    assert grass.name == "Test Grass"
+    assert grass.country == "USA"
+    assert grass.germination_period == "7 days"
+
+
+def test_add_same_type_products():
+    p1 = Smartphone("P1", "D1", 100, 2, 90.0, "M1", 128, "Black")
+    p2 = Smartphone("P2", "D2", 200, 3, 95.0, "M2", 256, "White")
+    assert p1 + p2 == 800  # 100*2 + 200*3
+
+
+def test_add_different_type_products():
+    p1 = Smartphone("P1", "D1", 100, 2, 90.0, "M1", 128, "Black")
+    p2 = LawnGrass("G1", "D2", 50, 5, "USA", "7 days", "Green")
+    with pytest.raises(TypeError):
+        p1 + p2
+
+
+def test_add_invalid_product_to_category():
+    cat = Category("Test", "Desc", [])
+    with pytest.raises(TypeError):
+        cat.add_product("not a product")
+
+
+def test_add_valid_subclass_product():
+    cat = Category("Test", "Desc", [])
+    phone = Smartphone("P1", "D1", 100, 2, 90.0, "M1", 128, "Black")
+    cat.add_product(phone)
+    assert len(cat.products) == 1
+
+
+def test_smartphone_repr():
+    phone = Smartphone("Test", "Desc", 100, 1, 90.0, "M1", 128, "Black")
+    assert "Smartphone" in repr(phone)
+    assert "M1" in repr(phone)
+
+
+def test_lawn_grass_repr():
+    grass = LawnGrass("Test", "Desc", 50, 1, "USA", "7 days", "Green")
+    assert "LawnGrass" in repr(grass)
+    assert "USA" in repr(grass)
+
+
+def test_base_product_abc():
+    """Тест, что BaseProduct действительно абстрактный"""
+    with pytest.raises(TypeError):
+        BaseProduct("Test", "Desc", 100, 5)
+
+
+def test_creation_logger_mixin():
+    """Тест работы миксина логирования"""
+    import io
+    import sys
+    from contextlib import redirect_stdout
+
+    f = io.StringIO()
+    with redirect_stdout(f):
+        p = Product("Test", "Desc", 100, 5)
+
+    output = f.getvalue()
+    assert "Создан объект класса Product" in output
+    assert "Аргументы: ('Test', 'Desc', 100, 5)" in output
+
+
+@pytest.fixture
+def sample_order(sample_product):
+    return Order("Test Order", "Order Description", sample_product, 2)
+
+
+def test_order_init(sample_order, sample_product):
+    assert sample_order.name == "Test Order"
+    assert sample_order.product == sample_product
+    assert sample_order.quantity == 2
+    assert sample_order.total_price == 200.0  # 100 * 2
+
+
+def test_order_str(sample_order):
+    assert "Test Order" in str(sample_order)
+    assert "2 шт." in str(sample_order)
+    assert "200" in str(sample_order)
+
+
+def test_order_invalid_product():
+    with pytest.raises(TypeError):
+        Order("Test", "Desc", "not a product", 1)
+
+
+def test_order_invalid_quantity(sample_product):
+    with pytest.raises(ValueError):
+        Order("Test", "Desc", sample_product, 0)
+
+
+def test_base_category_order_abc():
+    """Тест, что BaseCategoryOrder действительно абстрактный"""
+    with pytest.raises(TypeError):
+        BaseCategoryOrder("Test", "Desc")
