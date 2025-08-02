@@ -9,7 +9,8 @@ from src.main import (
     BaseProduct,
     CreationLoggerMixin,
     BaseCategoryOrder,
-    Order
+    Order,
+    ZeroQuantityError
 )
 
 
@@ -172,7 +173,7 @@ def test_json_loading_invalid_data(tmp_path):
 
 
 def test_product_negative_quantity():
-    with pytest.raises(ValueError):
+    with pytest.raises(ZeroQuantityError):
         Product("Test", "Desc", 100.0, -5)
 
 
@@ -494,17 +495,19 @@ def test_product_price_setter_zero():
     assert p.price == 100
 
 
-def test_category_add_invalid_product():
+def test_category_add_invalid_product(capsys):
     cat = Category("Test", "Desc", [])
-    with pytest.raises(TypeError):
-        cat.add_product("not a product")
+    cat.add_product("invalid")
+    captured = capsys.readouterr()
+    assert "Ошибка типа" in captured.out
 
 
-def test_category_add_duplicate_product():
+def test_category_add_duplicate_product(capsys):
     p = Product("Test", "Desc", 100, 5)
     cat = Category("Test", "Desc", [p])
-    with pytest.raises(ValueError):
-        cat.add_product(p)  # Дубликат
+    cat.add_product(p)
+    captured = capsys.readouterr()
+    assert "уже есть в категории" in captured.out
 
 
 def test_category_products_setter():
@@ -634,10 +637,11 @@ def test_add_different_type_products():
         p1 + p2
 
 
-def test_add_invalid_product_to_category():
+def test_add_invalid_product_to_category(capsys):
     cat = Category("Test", "Desc", [])
-    with pytest.raises(TypeError):
-        cat.add_product("not a product")
+    cat.add_product("not a product")
+    captured = capsys.readouterr()
+    assert "Ошибка типа" in captured.out
 
 
 def test_add_valid_subclass_product():
@@ -712,3 +716,35 @@ def test_base_category_order_abc():
     """Тест, что BaseCategoryOrder действительно абстрактный"""
     with pytest.raises(TypeError):
         BaseCategoryOrder("Test", "Desc")
+
+
+def test_product_zero_quantity():
+    with pytest.raises(ZeroQuantityError):
+        Product("Test", "Desc", 100, 0)
+
+
+def test_category_middle_price(sample_category):
+    assert sample_category.middle_price() == 100.0
+
+
+def test_category_middle_price_empty():
+    empty_cat = Category("Empty", "Desc", [])
+    assert empty_cat.middle_price() == 0.0
+
+
+def test_zero_quantity_error():
+    """Проверка пользовательского исключения"""
+    with pytest.raises(ZeroQuantityError):
+        Product("Test", "Desc", 100, 0)
+
+
+def test_add_product_logging(capsys):
+    """Проверка вывода сообщений при добавлении товара"""
+    cat = Category("Test", "Desc", [])
+    p = Product("Valid", "Desc", 100, 1)
+
+    cat.add_product(p)
+    captured = capsys.readouterr()
+    output = captured.out
+    assert "успешно добавлен" in output
+    assert "Обработка добавления товара завершена" in output

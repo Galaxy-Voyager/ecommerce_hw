@@ -4,6 +4,13 @@ import sys
 from abc import ABC, abstractmethod
 
 
+class ZeroQuantityError(Exception):
+    """Пользовательское исключение для товаров с нулевым количеством"""
+    def __init__(self, message="Товар с нулевым количеством не может быть добавлен"):
+        self.message = message
+        super().__init__(self.message)
+
+
 class BaseProduct(ABC):
     """Абстрактный базовый класс для всех продуктов"""
 
@@ -44,8 +51,10 @@ class Product(CreationLoggerMixin, BaseProduct):
             raise ValueError("Количество должно быть целым числом")
         if price < 0:
             raise ValueError("Цена не может быть отрицательной")
-        if quantity < 0:
-            raise ValueError("Количество не может быть отрицательным")
+        if not isinstance(quantity, int):
+            raise ValueError("Количество должно быть целым числом")
+        if quantity <= 0:
+            raise ZeroQuantityError()
 
         self.name = name.strip()
         self.description = description
@@ -218,21 +227,45 @@ class Category(BaseCategoryOrder):
 
     def add_product(self, product: "Product") -> None:
         """
-        Добавляет товар в категорию.
+        Добавляет товар в категорию с обработкой исключений.
 
         Args:
             product: Объект Product для добавления
 
         Raises:
-            ValueError: Если передан не Product или товар уже есть в категории
+            TypeError: Если передан не Product
+            ZeroQuantityError: Если у товара нулевое количество
         """
-        if not isinstance(product, Product):
-            raise TypeError("Можно добавлять только объекты Product или его наследников")
-        if product in self._products:
-            raise ValueError("Товар уже есть в категории")
+        try:
+            if not isinstance(product, Product):
+                raise TypeError("Можно добавлять только объекты Product")
 
-        self._products.append(product)
-        Category.product_count += 1
+            if product in self._products:
+                raise ValueError("Товар уже есть в категории")
+
+            if product.quantity == 0:
+                raise ZeroQuantityError()
+
+            self._products.append(product)
+            Category.product_count += 1
+            print(f"✅ Товар '{product.name}' успешно добавлен")
+
+        except TypeError as e:
+            print(f"❌ Ошибка типа: {e}")
+        except ValueError as e:
+            print(f"❌ Ошибка: {e}")
+        except ZeroQuantityError as e:
+            print(f"❌ Ошибка: {e}")
+        finally:
+            print("🔹 Обработка добавления товара завершена")
+
+    def middle_price(self) -> float:
+        """Рассчитывает среднюю цену товаров в категории"""
+        try:
+            total = sum(product.price for product in self._products)
+            return total / len(self._products)
+        except ZeroDivisionError:
+            return 0.0
 
     @property
     def products(self):
